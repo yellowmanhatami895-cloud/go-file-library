@@ -13,6 +13,39 @@ var book []Book
 var customer []Customer
 var staff []Staff
 
+func GetMenu(scanner *bufio.Scanner, title string, items []string) int {
+	fmt.Printf("[%s]\n", title)
+	for i, item := range items {
+		fmt.Printf("  %d. %s\n", i+1, item)
+	}
+	fmt.Println("----------------------")
+	for {
+		fmt.Println("Enter menu index: ")
+		scanner.Scan()
+		indexStr := scanner.Text()
+		if index, err := strconv.Atoi(strings.TrimSpace(indexStr)); err != nil {
+			fmt.Printf("Please enter index between %d and %d\n", 1, len(items))
+		} else {
+			if index < 1 || index > len(items) {
+				fmt.Printf("Please enter index between %d and %d\n", 1, len(items))
+			} else {
+				return index
+			}
+		}
+	}
+}
+
+func GetInput(scanner *bufio.Scanner, title string) string {
+	fmt.Println(title)
+	scanner.Scan()
+	return strings.TrimSpace(scanner.Text())
+}
+
+func FillDot(input string, l int) string {
+	delta := l - len(input)
+	return input + strings.Repeat(".", delta)
+}
+
 func main() {
 	read_book()
 	read_customer()
@@ -20,41 +53,26 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 
-		fmt.Println("login : customer.1 | staff.2")
-		scanner.Scan()
-		c := scanner.Text()
-		c = strings.TrimSpace(c)
+		c := GetMenu(scanner, "Login", []string{"Customer", "Staff"})
 
-		if c == "1" {
-
-			fmt.Println("enter username")
-			scanner.Scan()
-			c := scanner.Text()
-			c = strings.TrimSpace(c)
-
-			fmt.Println("enter password")
-			scanner.Scan()
-
-			p := strings.TrimSpace(scanner.Text())
+		if c == 1 {
+			username := GetInput(scanner, "Enter username:")
+			password := GetInput(scanner, "Enter password:")
 
 			found := false
 			for i := 0; i < len(customer); i++ {
-				if customer[i].name == c && customer[i].password == p {
+				if customer[i].name == username && customer[i].password == password {
 					fmt.Println("welcome", customer[i].name)
 					for {
 						found = true
-						fmt.Printf("\n change username and password.1 \n My_books.2 \n New book.3 \n pay debt.4 \n Exit.5 \n")
-						scanner.Scan()
-						c := strings.TrimSpace(scanner.Text())
 
-						if c == "1" {
+						c := GetMenu(scanner, "Customer Panel", []string{"Change username and password", "My books", "New book", "Pay debt", "Back"})
+
+						if c == 1 {
 							for {
-								fmt.Println("your username :", customer[i].name, "\n", "your password : ", customer[i].password, "\n", "enter new username and password")
-								scanner.Scan()
-								c = strings.TrimSpace(scanner.Text())
-
-								scanner.Scan()
-								p = strings.TrimSpace(scanner.Text())
+								fmt.Println("your username :", customer[i].name, "\n", "your password : ", customer[i].password)
+								newUsername := GetInput(scanner, "Enter new username:")
+								newPassword := GetInput(scanner, "Enter new password:")
 
 								file, err := os.OpenFile("src/customer.txt", os.O_WRONLY, 0644)
 								if err != nil {
@@ -63,52 +81,33 @@ func main() {
 								}
 								defer file.Close()
 								file.Seek(int64((39*i)+11), io.SeekStart)
-								if len(p) > 10 || len(c) > 10 {
+								if len(newPassword) > 10 || len(newUsername) > 10 {
 									fmt.Println("to long password or username(max = 10c)")
 								}
-								for {
-									if len(c) < 10 {
-										c = c + "."
-									} else {
-										break
-									}
-								}
-								for {
-									if len(p) < 10 {
-										p = p + "."
-									} else {
-										break
-									}
-								}
+								newUsername = FillDot(newUsername, 10)
+								newPassword = FillDot(newPassword, 10)
 
 								for j := 0; j < len(customer); j++ {
-									if p == customer[j].name {
+									if newPassword == customer[j].name {
 										fmt.Println("this username already owned")
 										break
 									}
 								}
 
-								file.WriteString(c)
-								file.WriteString(p)
+								file.WriteString(newUsername)
+								file.WriteString(newPassword)
 								k := customer[i].name
-								customer[i].name = c
-								customer[i].password = p
+								customer[i].name = newUsername
+								customer[i].password = newPassword
 								err = os.Rename("src/"+k, "src/"+customer[i].name)
 								if err != nil {
 									fmt.Println("err while renaming file :", err)
 								}
 
-								fmt.Println("your password success fully change \n Exit.1 ")
-								fmt.Scan(&c)
-								if c == "1" {
-									break
-								} else {
-									fmt.Println("unknown command")
-									break
-								}
-
+								fmt.Println("Your username and password successfully changed.")
+								break
 							}
-						} else if c == "2" {
+						} else if c == 2 {
 							file, err := os.OpenFile("src/"+customer[i].name, os.O_RDONLY, 0644)
 							if err != nil {
 								fmt.Println("err while opening file to read ")
@@ -132,7 +131,7 @@ func main() {
 								fmt.Println(strings.Trim(string(by), "."))
 								Line++
 							}
-						} else if c == "3" {
+						} else if c == 3 {
 							if customer[i].debt < 10000000 {
 								for {
 									for i := 0; i < len(book); i++ {
@@ -142,16 +141,9 @@ func main() {
 										}
 									}
 
-									fmt.Println("enter the name |Exit.2 ")
-									scanner.Scan()
-									A := scanner.Text()
-									A = strings.TrimSpace(A)
+									A := GetInput(scanner, "Enter name:")
 									found2 := false
-									if A == "2" {
-										found2 = true
-										break
 
-									}
 									for b := 0; b < len(book); b++ {
 
 										if A == book[b].name {
@@ -173,33 +165,14 @@ func main() {
 											}
 
 											bj := book[b].name
-											for {
-												if len(bj) < 15 {
-													bj = bj + "."
-												} else {
-													break
-												}
-											}
+											bj = FillDot(bj, 15)
 											book[b].quantity = book[b].quantity - 1
 
 											j := strconv.Itoa(book[b].quantity)
 
-											for {
-												if len(j) < 5 {
-													j = j + "."
-												} else {
-													break
-												}
-											}
+											j = FillDot(j, 5)
 											d := strconv.Itoa(book[b].price + customer[i].debt)
-
-											for {
-												if len(d) < 8 {
-													d = d + "."
-												} else {
-													break
-												}
-											}
+											d = FillDot(d, 8)
 											if len(d) > 8 {
 												fmt.Println("err to have debt")
 												break
@@ -237,13 +210,11 @@ func main() {
 								fmt.Println("you cant get new book you should pay debt first")
 
 							}
-						} else if c == "4" {
+						} else if c == 4 {
 							for {
-								fmt.Println("your debt : ", customer[i].debt, "pay.1 | Exit.2")
-								scanner.Scan()
-								c := scanner.Text()
-								c = strings.TrimSpace(c)
-								if c == "1" {
+								c := GetMenu(scanner, "Your debt", []string{"Pay", "Exit"})
+
+								if c == 1 {
 									file, err := os.OpenFile("src/customer.txt", os.O_WRONLY, 0644)
 									if err != nil {
 										fmt.Println("err while opening file to edit", err)
@@ -260,13 +231,13 @@ func main() {
 										fmt.Println("err while writing to file", err)
 									}
 									customer[i].debt = 0
-								} else if c == "2" {
+								} else if c == 2 {
 									break
 								} else {
 									fmt.Println("unknown command")
 								}
 							}
-						} else if c == "5" {
+						} else if c == 5 {
 							break
 						} else {
 							fmt.Println("unknown command")
@@ -277,37 +248,24 @@ func main() {
 			if found != true {
 				fmt.Println("unknown username or password")
 			}
-		} else if c == "2" {
+		} else if c == 2 {
 			for {
-				fmt.Println("enter id")
-				scanner.Scan()
-				c := scanner.Text()
-				c = strings.TrimSpace(c)
 				found := false
-				fmt.Println("enter the  password")
-				scanner.Scan()
-				p := scanner.Text()
-				p = strings.TrimSpace(p)
+				c := GetInput(scanner, "Enter ID:")
+				p := GetInput(scanner, "Enter password:")
 				for i := 0; i < len(staff); i++ {
 					if c == staff[i].id && p == staff[i].password {
 						for {
 							fmt.Println("welcome ", staff[i].name, " ", staff[i].lastName)
-							fmt.Println("customer.1 | books.2 | Exit.3")
-							scanner.Scan()
-							c := scanner.Text()
-							c = strings.TrimSpace(c)
-							if c == "1" {
-								fmt.Println("check.1 | remove.2 | add.3 |Exit.4")
-								scanner.Scan()
-								c := scanner.Text()
-								c = strings.TrimSpace(c)
-							} else if c == "2" {
+							c := GetMenu(scanner, "Staff Panel", []string{"Customer", "Books", "Back"})
+							if c == 1 {
+								c := GetMenu(scanner, "Edit customer", []string{"Check", "Remove", "Add", "Back"})
+								_ = c
+							} else if c == 2 {
 								for {
-									fmt.Println("check.1 | remove.2 | add.3 |Edit.4 |Exit.5")
-									scanner.Scan()
-									c := scanner.Text()
-									c = strings.TrimSpace(c)
-									if c == "1" {
+									c := GetMenu(scanner, "Edit books", []string{"Check", "Remove", "Add", "Edit", "Back"})
+
+									if c == 1 {
 										for i := 0; i < len(book); i++ {
 
 											if book[i].quantity > 0 {
@@ -315,20 +273,15 @@ func main() {
 											}
 										}
 
-									} else if c == "2" {
+									} else if c == 2 {
 
 										var rem []string
 										for {
-											fmt.Println("Exit.2 |enter the names :")
-											scanner.Scan()
-											c := scanner.Text()
-											c = strings.TrimSpace(c)
-											rem = append(rem, c)
-											if c == "2" {
-
+											c := GetInput(scanner, "Enter the names (or empty to back):")
+											if c == "" {
 												break
 											}
-
+											rem = append(rem, c)
 										}
 										mapD := make(map[string]bool)
 										for r := 0; r < len(rem); r++ {
@@ -345,26 +298,11 @@ func main() {
 
 												for n := d; n < len(book)-1; n++ {
 													name := book[n+1].name
-													quantity := string(book[n+1].quantity)
-													price := string(book[n+1].price)
-													for {
-														if len(name) < 15 {
-															name = name + "."
-														}
-														break
-													}
-													for {
-														if len(quantity) < 5 {
-															quantity = quantity + "."
-														}
-														break
-													}
-													for {
-														if len(price) < 8 {
-															price = price + "."
-														}
-														break
-													}
+													quantity := strconv.Itoa(book[n+1].quantity)
+													price := strconv.Itoa(book[n+1].price)
+													name = FillDot(name, 15)
+													quantity = FillDot(quantity, 5)
+													price = FillDot(price, 8)
 													file.WriteString(name + quantity + price + "\r\n")
 												}
 												file.Truncate(int64((len(book) - 1) * 30))
@@ -373,17 +311,22 @@ func main() {
 											}
 										}
 
-									} else if c == "3" {
+									} else if c == 3 {
+										file, err := os.OpenFile("src/book.txt", os.O_WRONLY, 0644)
+										if err != nil {
+											fmt.Println("err while openning file", err)
+										}
+										file.Close()
+										_ = GetInput(scanner, "Enter name (or empty to back):")
+									} else if c == 4 {
 
-									} else if c == "4" {
-
-									} else if c == "5" {
+									} else if c == 5 {
 
 									} else {
 										fmt.Println("unknown command")
 									}
 								}
-							} else if c == "3" {
+							} else if c == 3 {
 								break
 							} else {
 								fmt.Println("unknown command")
