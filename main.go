@@ -116,9 +116,10 @@ func main() {
 							}
 							defer file.Close()
 							Line := 0
+
 							by := make([]byte, 15)
 							for {
-								file.Seek(int64(Line*16), io.SeekStart)
+								file.Seek(int64(Line*17), io.SeekStart)
 
 								_, err = file.Read(by)
 								if err == io.EOF {
@@ -203,7 +204,7 @@ func main() {
 												fmt.Println("err to have debt")
 												break
 											}
-											_, err = file.WriteString(bj + "\n")
+											_, err = file.WriteString(bj + "\r\n")
 											file.Close()
 											if err != nil {
 												fmt.Println("err while writing to file", err)
@@ -289,14 +290,112 @@ func main() {
 				p = strings.TrimSpace(p)
 				for i := 0; i < len(staff); i++ {
 					if c == staff[i].id && p == staff[i].password {
-						fmt.Println("welcome ", staff[i].name, " ", staff[i].lastName)
+						for {
+							fmt.Println("welcome ", staff[i].name, " ", staff[i].lastName)
+							fmt.Println("customer.1 | books.2 | Exit.3")
+							scanner.Scan()
+							c := scanner.Text()
+							c = strings.TrimSpace(c)
+							if c == "1" {
+								fmt.Println("check.1 | remove.2 | add.3 |Exit.4")
+								scanner.Scan()
+								c := scanner.Text()
+								c = strings.TrimSpace(c)
+							} else if c == "2" {
+								for {
+									fmt.Println("check.1 | remove.2 | add.3 |Edit.4 |Exit.5")
+									scanner.Scan()
+									c := scanner.Text()
+									c = strings.TrimSpace(c)
+									if c == "1" {
+										for i := 0; i < len(book); i++ {
 
-						found = true
-						break
+											if book[i].quantity > 0 {
+												fmt.Println(book[i].name, ":", book[i].price)
+											}
+										}
+
+									} else if c == "2" {
+
+										var rem []string
+										for {
+											fmt.Println("Exit.2 |enter the names :")
+											scanner.Scan()
+											c := scanner.Text()
+											c = strings.TrimSpace(c)
+											rem = append(rem, c)
+											if c == "2" {
+
+												break
+											}
+
+										}
+										mapD := make(map[string]bool)
+										for r := 0; r < len(rem); r++ {
+											mapD[rem[r]] = true
+										}
+										for d := 0; d < len(book); d++ {
+											if mapD[book[d].name] {
+												file, err := os.OpenFile("src/book.txt", os.O_WRONLY, 0644)
+												if err != nil {
+													fmt.Println("err while opening book ", err)
+												}
+
+												file.Seek(int64(d*30), io.SeekStart)
+
+												for n := d; n < len(book)-1; n++ {
+													name := book[n+1].name
+													quantity := string(book[n+1].quantity)
+													price := string(book[n+1].price)
+													for {
+														if len(name) < 15 {
+															name = name + "."
+														}
+														break
+													}
+													for {
+														if len(quantity) < 5 {
+															quantity = quantity + "."
+														}
+														break
+													}
+													for {
+														if len(price) < 8 {
+															price = price + "."
+														}
+														break
+													}
+													file.WriteString(name + quantity + price + "\r\n")
+												}
+												file.Truncate(int64((len(book) - 1) * 30))
+												file.Close()
+
+											}
+										}
+
+									} else if c == "3" {
+
+									} else if c == "4" {
+
+									} else if c == "5" {
+
+									} else {
+										fmt.Println("unknown command")
+									}
+								}
+							} else if c == "3" {
+								break
+							} else {
+								fmt.Println("unknown command")
+							}
+
+							found = true
+							break
+						}
 					}
 				}
 				if found != true {
-				https: //github.com/yellowmanhatami895-cloud/go-file-library.git
+
 					fmt.Println("unknown user or password")
 				}
 			}
