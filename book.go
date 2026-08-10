@@ -9,6 +9,7 @@ import (
 )
 
 type Book struct {
+	ID       string
 	name     string
 	quantity int
 	price    int
@@ -23,8 +24,8 @@ func read_book() {
 	defer file.Close()
 	Line := 0
 	for {
-		file.Seek(int64(Line*30), io.SeekStart)
-		by := make([]byte, 28)
+		file.Seek(int64(Line*33), io.SeekStart)
+		by := make([]byte, 31)
 		_, err = file.Read(by)
 		if err == io.EOF {
 			fmt.Println("EOF book")
@@ -33,22 +34,25 @@ func read_book() {
 		if err != nil {
 			break
 		}
-		n := strings.Trim(string(by[:15]), ".")
-		q, err := strconv.Atoi(strings.Trim(string(by[15:20]), "."))
+		i := strings.Trim(string(by[:3]), ".")
+		n := strings.Trim(string(by[3:18]), ".")
+		q, err := strconv.Atoi(strings.Trim(string(by[18:23]), "."))
 		if err != nil {
 			fmt.Println("err cant conv quantity(book) : ", err)
 			break
 		}
-		p, err := strconv.Atoi(strings.Trim(string(by[20:]), "."))
+		p, err := strconv.Atoi(strings.Trim(string(by[23:]), "."))
 		if err != nil {
 			fmt.Println("err cant conv price(book) : ", err)
 		}
 		book = append(book, Book{
+			ID:       i,
 			name:     n,
 			quantity: q,
 			price:    p,
 		})
 		Line++
+
 	}
 
 }

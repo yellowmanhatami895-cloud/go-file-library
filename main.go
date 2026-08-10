@@ -48,6 +48,11 @@ func FillDot(input string, l int) string {
 	delta := l - len(input)
 	return input + strings.Repeat(".", delta)
 }
+func closer(files []*os.File) {
+	for _, f := range files {
+		f.Close()
+	}
+}
 
 func staffLogin() {
 
