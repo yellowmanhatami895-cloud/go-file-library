@@ -66,8 +66,8 @@ func back(input string, inputInt int) bool {
 	}
 	return false
 }
-func checkName(name string, othernames string) bool {
-	if name == othernames {
+func checkName(name string, otherNames string) bool {
+	if name == otherNames {
 		return false
 	}
 	return true
@@ -78,13 +78,13 @@ func main() {
 	read_staff()
 	fmt.Println("you can back every time after presing (empty) + enter")
 	for {
-		choise := GetMenu("Login", []string{"Customer", "Staff"})
-		if back(" ", choise) == true {
+		choice := GetMenu("Login", []string{"Customer", "Staff"})
+		if back(" ", choice) == true {
 			break
 		}
-		switch choise {
+		switch choice {
 		case 1:
-			custoemerLogin()
+			customerLogin()
 		case 2:
 			staffLogin()
 
