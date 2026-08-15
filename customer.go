@@ -12,7 +12,10 @@ type Customer struct {
 	Name        string
 	Password    string
 	Debt        int
+	Offset      int64
 }
+
+var Offset int
 
 func readCustomerFromFile(file *os.File) (Customer, error) {
 	line, err := readLineFromFile(file)
@@ -30,11 +33,13 @@ func readCustomerFromFile(file *os.File) (Customer, error) {
 	if err != nil {
 		fmt.Println("err conv inventory(customer) : ", err)
 	}
+	Offset = len(line) + Offset
 	customer = Customer{
 		PhoneNumber: fields[0],
 		Name:        n,
 		Password:    pas,
 		Debt:        i,
+		Offset:      int64(Offset),
 	}
 	return customer, nil
 
@@ -49,7 +54,7 @@ func readCustomer() {
 	for {
 		customer, err := readCustomerFromFile(file)
 		if err != nil {
-			continue
+			break
 		}
 		customers = append(customers, customer)
 	}

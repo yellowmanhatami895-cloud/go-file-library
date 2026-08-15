@@ -21,6 +21,9 @@ func readStaffFromFile(file *os.File) (Staff, error) {
 	}
 	fields := strings.Split(line, "|")
 	var staff Staff
+	if len(fields) < 4 {
+		return staff, err
+	}
 	staff.ID, err = strconv.Atoi(fields[0])
 	if err != nil {
 		return Staff{}, err
@@ -39,6 +42,7 @@ func readStaff() {
 	defer file.Close()
 
 	for {
+
 		staff, err := readStaffFromFile(file)
 		if err != nil {
 			break
