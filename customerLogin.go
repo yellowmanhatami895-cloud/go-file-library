@@ -11,51 +11,51 @@ import (
 func customerLogin() {
 Exit:
 	for {
-		phonenumber := GetInput("Enter phone number:")
-		if true == back(phonenumber, 0) {
+		phonenumber := GetInput("Enter phone number [0 for back]:")
+		if phonenumber == "0" {
 			break
 		}
-		password := GetInput("Enter password:")
-		if true == back(password, 0) {
+		password := GetInput("Enter password [0 for back]:")
+		if password == "0" {
 			break
 		}
 		for {
-			for i, c := range customer {
-				if c.phonenumber == phonenumber || c.password == password {
+			for i, c := range customers {
+				if c.PhoneNumber == phonenumber || c.Password == password {
 
 					choice := GetMenu("Customer panel", []string{"Change username and password", "change PhoneNumber", "My books", "New book", "Pay debt"})
-					if back(" ", choice) == true {
+					if choice == 0 {
 						break Exit
 					}
 					switch choice {
 					case 1:
 
 						for {
-							fmt.Printf("your user name : %s your password : %s \n Enter new username and password \n", c.name, c.password)
+							fmt.Printf("your user name : %s your password : %s \n Enter new username and password \n", c.Name, c.Password)
 							scanner.Scan()
 							newUsername := strings.TrimSpace(scanner.Text())
-							if true == back(newUsername, 0) {
+							if newUsername == "0" {
 								break
 							}
 							scanner.Scan()
 							newPassword := strings.TrimSpace(scanner.Text())
-							if true == back(newPassword, 0) {
+							if newPassword == "0" {
 								break
 							}
-							for range customer {
+							for range customers {
 
-								if _, err := os.Stat(c.name); err == nil {
+								if _, err := os.Stat(c.Name); err == nil {
 
-									err := os.Rename(c.name, newUsername)
+									err := os.Rename(c.Name, newUsername)
 									if err != nil {
 										fmt.Println("err while renamign file", err)
 									}
 								}
 
-								c.name = newUsername
-								c.password = newPassword
-								newUsername = FillDot(c.name, 10)
-								newPassword = FillDot(c.password, 10)
+								c.Name = newUsername
+								c.Password = newPassword
+								newUsername = FillDot(c.Name, 10)
+								newPassword = FillDot(c.Password, 10)
 
 								file, err := os.OpenFile("src/customer.txt", os.O_WRONLY, 0644)
 								if err != nil {
@@ -73,25 +73,22 @@ Exit:
 					case 2:
 					changeLoop:
 						for {
-							fmt.Println("your phonenumber :", c.phonenumber, "\n Enter new phonenumber :")
-							scanner.Scan()
-							input := scanner.Text()
-							back(input, 0)
+							input := GetInput("Your phone number is " + c.PhoneNumber + ".\nEnter new phone number:")
 							if len(input) == 11 {
-								c.phonenumber = input
+								c.PhoneNumber = input
 								file, err := os.OpenFile("src/customer.txt", os.O_WRONLY, 0644)
 								if err != nil {
 									fmt.Println("err while opening file", err)
 								}
-								for _, x := range customer {
-									if checkName(input, x.phonenumber) == false {
+								for _, x := range customers {
+									if checkName(input, x.PhoneNumber) == false {
 										fmt.Println("This phonenumber already exist")
 										break changeLoop
 									}
 								}
 								file.Seek(int64(i*41), io.SeekStart)
 								file.WriteString(input)
-								fmt.Println("your new phonenumber :", c.phonenumber)
+								fmt.Println("your new phonenumber :", c.PhoneNumber)
 
 								closer([]*os.File{file})
 								break
@@ -101,18 +98,51 @@ Exit:
 
 						}
 					case 3:
+						fileSelf, err := os.OpenFile("src/"+customers[i].Name, os.O_RDONLY, 0644)
+						if err != nil {
+							fmt.Println("err while opening file")
+							break
+						}
+						buf := make([]byte, 3)
+						var myBook []string
+						Line := 0
+						for {
+							fileSelf.Seek(int64(Line*4), io.SeekStart)
+							_, err = fileSelf.Read(buf)
+							if err == io.EOF {
+								fmt.Println("End")
+								closer([]*os.File{fileSelf})
+								break
+							}
+							id, err := strconv.Atoi(strings.Trim(string(buf), "."))
+							if err != nil {
+								Line++
+								continue
+							}
 
+							for i, _ := range books {
+								if id == books[i].ID {
+									myBook = append(myBook, books[i].Name)
+									fmt.Println("Found Book: ", books[i].Name)
+								}
+							}
+							Line++
+						}
+						for i, _ := range myBook {
+							fmt.Println(myBook[i])
+						}
+						closer([]*os.File{fileSelf})
 					case 4:
 					Loop:
 						for {
-							if c.debt > 1000000 {
+							if c.Debt > 1000000 {
 								fmt.Println("you should pay your debt first ")
 								break
 							}
-							for _, b := range book {
-								fmt.Println(b.name, b.price, b.ID)
+							for _, b := range books {
+								fmt.Println(b.Name, b.Price, b.ID)
 							}
-							fileSelf, err := os.OpenFile("src/"+c.name, os.O_WRONLY|os.O_CREATE, 0644)
+							fileSelf, err := os.OpenFile("src/"+c.Name, os.O_WRONLY|os.O_CREATE, 0644)
 							if err != nil {
 								fmt.Println("err while opening fileSelf", err)
 								break
@@ -132,13 +162,13 @@ Exit:
 
 							}
 							for {
-								input := GetInput("Enter ids: ")
-								if back(input, 0) {
+								input := GetIntInput("Enter IDs [0 for back]: ")
+								if input == 0 {
 									break Loop
 								}
 								found := false
-								for indexB, b := range book {
-									if false == checkName(input, b.ID) {
+								for indexB, b := range books {
+									if input != b.ID {
 										found = true
 										_, err = fileBook.Seek(int64(indexB*33)+18, io.SeekStart)
 										if err != nil {
@@ -156,21 +186,40 @@ Exit:
 											fmt.Println("err while seeking fileSelf", err)
 											break
 										}
-										book[indexB].quantity = book[indexB].quantity - 1
-										customer[i].debt = customer[i].debt + book[indexB].price
-
-										fileSelf.WriteString(input + "\r\n")
-										fileBook.WriteString(FillDot(strconv.Itoa(book[indexB].quantity), 5))
-										fileCustomer.WriteString(FillDot(strconv.Itoa(customer[i].debt), 8))
+										books[indexB].Quantity = books[indexB].Quantity - 1
+										customers[i].Debt = customers[i].Debt + books[indexB].Price
+										fileSelf.WriteString(FillDot(strconv.Itoa(input), 3) + "\n")
+										fileBook.WriteString(FillDot(strconv.Itoa(books[indexB].Quantity), 5))
+										fileCustomer.WriteString(FillDot(strconv.Itoa(customers[i].Debt), 8))
+										closer([]*os.File{fileSelf, fileBook, fileCustomer})
 									}
 								}
 								if found != true {
 									fmt.Println("unknown id")
 								}
 							}
-							closer([]*os.File{fileSelf, fileBook, fileCustomer})
+
 						}
 					case 5:
+						for {
+							fmt.Println("you can pay :", customers[i].Debt)
+							input := GetMenu("Debt", []string{"pay"})
+							if input == 0 {
+								break
+							}
+							if input == 1 {
+								customers[i].Debt = 0
+								fileCustomer, err := os.OpenFile("src/customer.txt", os.O_WRONLY, 0644)
+								if err != nil {
+									fmt.Println("err while opening file")
+									break
+								}
+								fileCustomer.Seek(int64(i*41)+31, io.SeekStart)
+								fileCustomer.WriteString("0.......")
+								closer([]*os.File{fileCustomer})
+							}
+
+						}
 					}
 
 				}

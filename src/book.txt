@@ -1,29 +1,29 @@
-1..Clean Code.....5....400000..
-2..Pragmatic Progr11...50000...
-3..Refactoring....113..40......
-4..Intro Algorithm1....400000..
-5..Structure In6..0....400000..
-6..Mythical M8....5....40000...
-7..Code Complete..17...500000..
-8..Head First Des.13...40000...
-9..Working Legacy.4....135000..
-10.Domain-Driven..10...44500...
-11.Enterprise Arch5....400000..
-12.Test Driven....14...48000...
-13.Continuous Del.22...72000...
-14.Clean Architec.7....130000..
-15.Art of Programm2....250000..
-16.Programming Pea10...68000...
-17.JavaScript Good25...35000...
-18.You Dont Know..30...42000...
-19.Eloquent JavaS.16...38000...
-20.Python Crash...19...51000...
-21.Automate Boring22...45000...
-22.Fluent Python..8....80000...
-23.Effective Java.13...95000...
-24.Thinking Java..6....180000..
-25.C Programming..17...62000...
-26.Algorithms Unl.11...73000...
-27.Deep Learning..2....150000..
-28.Machine Learni.2....160000..
-29.Artificial Int.4....132000..
+001|alksdfjlksdjflksdfjglksdfgjs;doifuweriogjsdfkljglsdkfjgiosdfgioerklfjklsdfjkdfjglkdfjgfldskgjioserjg|1|1
+001|book|4|4
+002|newbook|1|2
+004|Intro Algorithm|1|400000
+005|Structure In6|0|400000
+006|Mythical M8|5|40000
+007|Code Complete|17|500000
+008|Head First Des|13|40000
+009|Working Legacy|4|135000
+010|Domain-Driven|10|44500
+011|Enterprise Arch|5|400000
+012|Test Driven|14|48000
+013|Continuous Del|22|72000
+014|Clean Architec|7|130000
+015|Art of Programm|2|250000
+016|Programming Pea|10|68000
+017|JavaScript Good|25|35000
+018|You Dont Know|30|42000
+019|Eloquent JavaS|16|38000
+020|Python Crash|19|51000
+021|Automate Boring|22|45000
+022|Fluent Python|8|80000
+023|Effective Java|13|95000
+024|Thinking Java|6|180000
+025|C Programming|17|62000
+026|Algorithms Unl|11|73000
+027|Deep Learning|2|150000
+028|Machine Learni|2|160000
+003|booooook|41|54

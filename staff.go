@@ -2,47 +2,49 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
+	"strconv"
 	"strings"
 )
 
 type Staff struct {
-	id       string
-	password string
-	name     string
-	lastName string
+	ID       int
+	Password string
+	Name     string
+	LastName string
 }
 
-func read_staff() {
+func readStaffFromFile(file *os.File) (Staff, error) {
+	line, err := readLineFromFile(file)
+	if err != nil {
+		return Staff{}, err
+	}
+	fields := strings.Split(line, "|")
+	var staff Staff
+	staff.ID, err = strconv.Atoi(fields[0])
+	if err != nil {
+		return Staff{}, err
+	}
+	staff.Password = fields[1]
+	staff.Name = fields[2]
+	staff.LastName = fields[3]
+	return staff, nil
+}
+func readStaff() {
 	file, err := os.OpenFile("src/staff.txt", os.O_RDONLY, 0644)
 	if err != nil {
 		fmt.Println("err while opening staff.txt")
 		fmt.Println(err)
 	}
 	defer file.Close()
-	Line := 0
-	for {
-		file.Seek(int64(Line*35), io.SeekStart)
-		by := make([]byte, 33)
-		_, err = file.Read(by)
-		if err == io.EOF {
-			fmt.Println("EOF staff")
 
-		}
+	for {
+		staff, err := readStaffFromFile(file)
 		if err != nil {
 			break
 		}
-		p := strings.Trim(string(by[5:13]), ".")
-		n := strings.Trim(string(by[13:23]), ".")
-		ln := strings.Trim(string(by[23:]), ".")
-		staff = append(staff, Staff{
-			id:       string(by[:5]),
-			password: p,
-			name:     n,
-			lastName: ln,
-		})
-		Line++
+		staffs = append(staffs, staff)
+		fmt.Println(staff)
 	}
 
 }

@@ -9,50 +9,78 @@ import (
 )
 
 type Book struct {
-	ID       string
-	name     string
-	quantity int
-	price    int
+	ID       int
+	Name     string
+	Quantity int
+	Price    int
 }
 
-func read_book() {
+func readLineFromFile(file *os.File) (string, error) {
+	line := make([]byte, 1000)
+	readCount, err := file.Read(line)
+	if err != nil {
+		return "", err
+	}
+	index := strings.IndexByte(string(line), '\n')
+	if index < 0 {
+		return string(line[:readCount]), nil
+	}
+	newSeek := readCount - index - 1
+	if newSeek > 0 {
+		file.Seek(-int64(newSeek), io.SeekCurrent)
+	}
+
+	return string(line[:index-1]), nil
+}
+
+func readBookFromFile(file *os.File) (Book, error) {
+	line, err := readLineFromFile(file)
+	if err != nil {
+		return Book{}, err
+	}
+
+	fields := strings.Split(line, "|")
+	if len(fields) != 4 {
+		return Book{}, fmt.Errorf("invalid record line")
+	}
+
+	var book Book
+	book.ID, err = strconv.Atoi(fields[0])
+	if err != nil {
+		return Book{}, err
+	}
+
+	book.Name = fields[1]
+
+	book.Quantity, err = strconv.Atoi(fields[2])
+	if err != nil {
+		fmt.Println("Error cant conv quantity(book) : ", err)
+		return Book{}, err
+	}
+
+	book.Price, err = strconv.Atoi(fields[3])
+	if err != nil {
+		fmt.Println("err cant conv price(book) : ", err)
+		return Book{}, err
+	}
+
+	return book, nil
+}
+
+func readBook() {
 	file, err := os.OpenFile("src/book.txt", os.O_RDONLY, 0644)
 	if err != nil {
-		fmt.Println("err while opening book.txt")
-		fmt.Println(err)
+		fmt.Println("Error while opening book.txt", err)
+		return
 	}
 	defer file.Close()
-	Line := 0
+
 	for {
-		file.Seek(int64(Line*33), io.SeekStart)
-		by := make([]byte, 31)
-		_, err = file.Read(by)
-		if err == io.EOF {
-			fmt.Println("EOF book")
-
-		}
+		book, err := readBookFromFile(file)
 		if err != nil {
 			break
 		}
-		i := strings.Trim(string(by[:3]), ".")
-		n := strings.Trim(string(by[3:18]), ".")
-		q, err := strconv.Atoi(strings.Trim(string(by[18:23]), "."))
-		if err != nil {
-			fmt.Println("err cant conv quantity(book) : ", err)
-			break
-		}
-		p, err := strconv.Atoi(strings.Trim(string(by[23:]), "."))
-		if err != nil {
-			fmt.Println("err cant conv price(book) : ", err)
-		}
-		book = append(book, Book{
-			ID:       i,
-			name:     n,
-			quantity: q,
-			price:    p,
-		})
-		Line++
 
+		books = append(books, book)
 	}
-
 }
